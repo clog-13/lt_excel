@@ -9,6 +9,10 @@ import (
 )
 
 func main() {
+	Init()
+}
+
+func Init() {
 	installation := excelize.NewFile()
 	defer func() {
 		if err := installation.Close(); err != nil {
@@ -245,10 +249,120 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
+
 	address.SetActiveSheet(index)
 	address_title := [...]string{"七级地址ID**", "一级地址", "二级地址", "三级地址", "四级地址", "五级地址", "六级地址", "七级地址", "八级地址", "九级地址", "十级地址", "十一级地址", "设备类型**", "设备名称**", "接入业务**", "接入方式**", "已安装号码", "地址模式**", "地域类型", "区域类型", "子区域类型(7级及以上必填)", "所属楼层(10级及以上必填)", "地址归属(7级地址必填)", "地址归属(名单制楼宇)", "产权归属*", "覆盖区域*", "小区分类*(集团)", "小区类型*(集团)", "错误编码", "错误信息"}
 	for idx, val := range address_title {
 		address.SetCellValue("data sheet", title_no[idx]+"1", val)
 	}
+	ADDR := "data sheet"
+	SOURCE_ADDR := "驻地网地址"
 
+	address_no := 2
+	for {
+		idx, _ := excelize.CoordinatesToCellName(2, address_no)
+		tmp, _ := source.GetCellValue("驻地网地址", idx)
+		if isBlank(tmp) {
+			address_no--
+			break
+		}
+		address_no++
+	}
+
+	pre_e, cur := "", ""
+	add_cnt := FRIST_BEAM_SPLITTER + 2
+	for i := 2; i < address_no; i++ {
+		a, _ := source.GetCellValue(SOURCE_ADDR, "B"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "A"+strconv.Itoa(i), a)
+		b, _ := source.GetCellValue(SOURCE_ADDR, "C"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "B"+strconv.Itoa(i), b)
+		c, _ := source.GetCellValue(SOURCE_ADDR, "D"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "C"+strconv.Itoa(i), c)
+		d, _ := source.GetCellValue(SOURCE_ADDR, "F"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "D"+strconv.Itoa(i), d)
+		e, _ := source.GetCellValue(SOURCE_ADDR, "G"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "E"+strconv.Itoa(i), e)
+		f, _ := source.GetCellValue(SOURCE_ADDR, "H"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "F"+strconv.Itoa(i), f)
+		g, _ := source.GetCellValue(SOURCE_ADDR, "I"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "G"+strconv.Itoa(i), g)
+		h, _ := source.GetCellValue(SOURCE_ADDR, "J"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "H"+strconv.Itoa(i), h)
+		ii, _ := source.GetCellValue(SOURCE_ADDR, "K"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "I"+strconv.Itoa(i), ii)
+		j, _ := source.GetCellValue(SOURCE_ADDR, "L"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "J"+strconv.Itoa(i), j)
+		k, _ := source.GetCellValue(SOURCE_ADDR, "M"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "K"+strconv.Itoa(i), k)
+		l, _ := source.GetCellValue(SOURCE_ADDR, "n"+strconv.Itoa(i+1))
+		address.SetCellValue(ADDR, "L"+strconv.Itoa(i), l)
+		address.SetCellValue(ADDR, "M"+strconv.Itoa(i), "分光器")
+
+		tmp_e, _ := source.GetCellValue(SOURCE_ADDR, "E"+strconv.Itoa(i+1))
+		if tmp_e != pre_e {
+			pre_e = tmp_e
+			cur, _ = installation.GetCellValue("data sheet", "C"+strconv.Itoa(add_cnt))
+			cur = cur[len(cur)-11:]
+			add_cnt++
+		}
+		address.SetCellValue(ADDR, "N"+strconv.Itoa(i), c+d+e+f+g+h+ii+j+cur)
+
+		address.SetCellValue(ADDR, "O"+strconv.Itoa(i), "宽带")
+		address.SetCellValue(ADDR, "P"+strconv.Itoa(i), "FTTH")
+		address.SetCellValue(ADDR, "R"+strconv.Itoa(i), "非到户")
+		address.SetCellValue(ADDR, "S"+strconv.Itoa(i), "乡镇")
+		address.SetCellValue(ADDR, "T"+strconv.Itoa(i), "城市小区")
+		address.SetCellValue(ADDR, "U"+strconv.Itoa(i), "小区")
+		address.SetCellValue(ADDR, "V"+strconv.Itoa(i), k[:len(k)-3])
+		address.SetCellValue(ADDR, "W"+strconv.Itoa(i), "公众")
+		address.SetCellValue(ADDR, "X"+strconv.Itoa(i), "公众地址")
+		address.SetCellValue(ADDR, "Y"+strconv.Itoa(i), "自有")
+		address.SetCellValue(ADDR, "Z"+strconv.Itoa(i), "城市")
+		address.SetCellValue(ADDR, "AA"+strconv.Itoa(i), "社区")
+		address.SetCellValue(ADDR, "AB"+strconv.Itoa(i), "封闭式住宅小区")
+	}
+
+	// 小区维度
+	// ==================================================================================================
+	hood := excelize.NewFile()
+	defer func() {
+		if err := hood.Close(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	index, _ = hood.NewSheet("data sheet")
+	defer func() {
+		if err := hood.SaveAs("source/小区维度.xlsx"); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	hood.SetActiveSheet(index)
+	hood_title := [...]string{"本地网**", "服务区**", "网格**", "小区名称**", "小区地址", "设备名称**", "错误编码", "错误信息"}
+	for idx, val := range hood_title {
+		hood.SetCellValue("data sheet", title_no[idx]+"1", val)
+	}
+	hood_no := SECOND_BEAM_SPLITTER
+
+	hood_name, _ := source.GetCellValue(SOURCE_ADDR, "J"+strconv.Itoa(2))
+	net, _ := source.GetCellValue(SOURCE_ADDR, "G"+strconv.Itoa(2))
+	for i := 0; i < hood_no; i++ {
+		hood.SetCellValue(ADDR, "A"+strconv.Itoa(i+2), "眉山") // TODO:
+		hood.SetCellValue(ADDR, "B"+strconv.Itoa(i+2), "仁寿") // TODO:
+		hood.SetCellValue(ADDR, "C"+strconv.Itoa(i+2), "仁寿"+net+"眉山网格")
+		hood.SetCellValue(ADDR, "D"+strconv.Itoa(i+2), hood_name)
+
+		hood_addr, _ := installation.GetCellValue("data sheet", "B"+strconv.Itoa(i+2+FRIST_BEAM_SPLITTER))
+		hood.SetCellValue(ADDR, "E"+strconv.Itoa(i+2), hood_addr)
+		install_name, _ := installation.GetCellValue("data sheet", "C"+strconv.Itoa(i+2+FRIST_BEAM_SPLITTER))
+		hood.SetCellValue(ADDR, "F"+strconv.Itoa(i+2), install_name)
+	}
+}
+
+func isBlank(s string) bool {
+	// 移除字符串首尾的空白字符
+	trimmed := strings.TrimSpace(s)
+
+	// 判断是否为空字符串
+	return trimmed == ""
 }
